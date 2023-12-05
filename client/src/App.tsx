@@ -1,9 +1,10 @@
 import React from "react";
+import SignUp from "./views/SignUp";
 
 function App() {
   return (
     <div>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
+      <SignUp />
     </div>
   );
 }
