@@ -8,11 +8,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
           url: "users/signup",
           method: "POST",
           body: data,
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
         };
       },
     }),
@@ -22,11 +17,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
           url: "users/login",
           method: "POST",
           body: data,
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
         };
       },
     }),

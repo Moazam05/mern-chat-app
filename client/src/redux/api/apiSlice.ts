@@ -6,6 +6,7 @@ export const apiSlice = createApi({
 
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.REACT_APP_API_URL,
+    credentials: "include", // Include credentials (cookies) with each request
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth?.user?.token;
       if (token) {
@@ -14,6 +15,6 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Doctors"],
+  tagTypes: [""],
   endpoints: (builder) => ({}),
 });

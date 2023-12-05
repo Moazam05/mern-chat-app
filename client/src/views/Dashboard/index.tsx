@@ -1,10 +1,22 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
 import { LuSendHorizonal } from "react-icons/lu";
 
 const Dashboard = () => {
   const [message, setMessage] = useState("");
+  const [ws, setWs] = useState<WebSocket | null>(null);
+
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:5000");
+    setWs(ws);
+
+    ws.addEventListener("message", handleMessage);
+  }, []);
+
+  const handleMessage = (e: MessageEvent) => {
+    console.log("new message", e);
+  };
 
   return (
     <Box className="flex h-screen">

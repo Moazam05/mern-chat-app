@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
+const ws = require("ws");
 // Custom Imports
 const app = require("./app");
 
@@ -28,6 +29,13 @@ db.once("open", () => {
 const port = process.env.PORT || 8000;
 const server = app.listen(port, () => {
   console.log(`Server in running on port ${port}`);
+});
+
+// WEB SOCKET
+const wss = new ws.WebSocketServer({ server });
+
+wss.on("connection", (connection, req) => {
+  console.log("cookies", req.headers);
 });
 
 process.on("unhandledRejection", (err) => {
