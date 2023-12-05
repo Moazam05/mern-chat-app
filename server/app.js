@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const colors = require("colors");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 // Custom Imports
 const AppError = require("./utils/appError");
@@ -10,10 +11,11 @@ const userRouter = require("./routes/userRoutes");
 
 const corsOptions = {
   origin: "http://localhost:3000",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
 };
 
 const app = express();
+app.use(cookieParser());
 app.use(cors(corsOptions));
 
 if (process.env.NODE_ENV === "development") {
