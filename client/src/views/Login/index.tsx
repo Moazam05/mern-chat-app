@@ -19,6 +19,7 @@ import DotLoader from "../../components/Spinner/dotLoader";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
 import ToastAlert from "../../components/ToastAlert/ToastAlert";
 import * as Yup from "yup";
+import { Cookies } from "react-cookie";
 
 const loginSchema = Yup.object().shape({
   userName: Yup.string().required("User Name is required").nullable(),
@@ -33,6 +34,7 @@ interface ISLoginForm {
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const cookies = new Cookies();
 
   // states
   const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +72,7 @@ const Login = () => {
 
       if (user?.data?.status) {
         dispatch(setUser(user?.data));
+        cookies.set("user", JSON.stringify(user?.data), { path: "/" });
         localStorage.setItem("user", JSON.stringify(user?.data));
         navigate("/");
       }
