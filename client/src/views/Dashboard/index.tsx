@@ -9,9 +9,9 @@ import { selectedUserId } from "../../redux/auth/authSlice";
 
 const Dashboard = () => {
   const userId = useTypedSelector(selectedUserId);
-  const [message, setMessage] = useState("");
+  const [newMessage, setNewMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
-  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [onlinePeople, setOnlinePeople] = useState<any>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   useEffect(() => {
@@ -21,24 +21,42 @@ const Dashboard = () => {
     ws.addEventListener("message", handleMessage);
   }, []);
 
+  const showOnlinePeople = (peopleArray: any) => {
+    const people: any = {};
+    peopleArray.forEach(({ userId, username }: any) => {
+      people[userId] = username;
+    });
+
+    const convertedArray = Object.entries(people).map(([userId, username]) => ({
+      userId,
+      username,
+    }));
+
+    setOnlinePeople(convertedArray);
+  };
+
   const handleMessage = (e: MessageEvent) => {
+    // Checking Online People
     const messageData = JSON.parse(e.data);
+    if ("online" in messageData) {
+      showOnlinePeople(messageData.online);
+    }
+    // Checking New Message
+    else {
+      console.log(messageData);
+    }
+  };
 
-    if (messageData.type === "onlineUsers") {
-      // Use a Set to keep track of unique user IDs
-      const uniqueUserIds = new Set();
-
-      // Filter out duplicates based on user IDs
-      const uniqueOnlinePeople = messageData.onlineUsers.filter((user: any) => {
-        if (!uniqueUserIds.has(user.userId)) {
-          uniqueUserIds.add(user.userId);
-          return true;
-        }
-        return false;
-      });
-
-      // Set the state with the updated unique array
-      setOnlineUsers(uniqueOnlinePeople);
+  const sendMessage = (e: any) => {
+    e.preventDefault();
+    if (ws) {
+      ws.send(
+        JSON.stringify({
+          recipient: selectedUser,
+          text: newMessage,
+        })
+      );
+      setNewMessage("");
     }
   };
 
@@ -48,9 +66,9 @@ const Dashboard = () => {
         <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
           <IoMdChatbubbles /> Mern Chat
         </Box>
-        {onlineUsers
+        {onlinePeople
           .filter((c: any) => c.userId !== userId)
-          .map((user: any, index) => (
+          .map((user: any, index: any) => (
             <Box
               className={
                 "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
@@ -77,19 +95,22 @@ const Dashboard = () => {
             </Box>
           )}
         </Box>
-        <Box className="flex gap-2 mx-2">
-          <PrimaryInput
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message here"
-          />
-          <button
-            style={{ borderRadius: "5px" }}
-            className="bg-blue-500 pr-3 pl-3 text-white flex justify-center items-center"
-          >
-            <LuSendHorizonal fontSize={25} />
-          </button>
-        </Box>
+        {!!selectedUser && (
+          <form className="flex gap-2 mx-2" onSubmit={sendMessage}>
+            <PrimaryInput
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message here"
+            />
+            <button
+              type="submit"
+              style={{ borderRadius: "5px" }}
+              className="bg-blue-500 pr-3 pl-3 text-white flex justify-center items-center"
+            >
+              <LuSendHorizonal fontSize={25} />
+            </button>
+          </form>
+        )}
       </Box>
     </Box>
   );

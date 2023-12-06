@@ -4,6 +4,7 @@ const ws = require("ws");
 const { parse } = require("cookie");
 // Custom Imports
 const app = require("./app");
+const { setupWebSocketServer } = require("./socket");
 
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! 💥 Shutting down...");
@@ -32,63 +33,8 @@ const server = app.listen(port, () => {
   console.log(`Server in running on port ${port}`);
 });
 
-// WEB SOCKET
-const wss = new ws.WebSocketServer({ server });
-
-const userConnections = [];
-
-function broadcastOnlineUsers() {
-  const onlineUsers = userConnections.map(({ userId, username }) => ({
-    userId,
-    username,
-  }));
-  const message = JSON.stringify({ type: "onlineUsers", onlineUsers });
-
-  // Broadcast the list of online users to all connected clients
-  wss.clients.forEach((client) => {
-    if (client.readyState === ws.OPEN) {
-      client.send(message);
-    }
-  });
-}
-
-wss.on("connection", (connection, req) => {
-  let userId; // Declare userId outside of the if block
-
-  // Parse the 'user' cookie from the request headers
-  const cookies = parse(req.headers.cookie || "");
-  const userCookie = cookies["user"];
-
-  if (userCookie) {
-    const userObject = JSON.parse(decodeURIComponent(userCookie));
-    // Access the user ID and username from the userObject
-    const userId = userObject?.data?.user?._id;
-    const username = userObject?.data?.user?.username;
-    // Attach the WebSocket connection to the user ID
-    userConnections.push({ userId, username });
-
-    // Broadcast the updated list of online users to all clients
-    broadcastOnlineUsers();
-
-    console.log("User connected:", userId, username);
-  }
-
-  connection.on("close", () => {
-    // Remove the user from the userConnections array on disconnect
-    const disconnectedUserIndex = userConnections.findIndex(
-      (user) => user.userId === userId
-    );
-
-    if (disconnectedUserIndex !== -1) {
-      userConnections.splice(disconnectedUserIndex, 1);
-
-      // Broadcast the updated list of online users to all clients
-      broadcastOnlineUsers();
-    }
-
-    console.log("User disconnected:", userId);
-  });
-});
+// Set up WebSocket server
+setupWebSocketServer(server);
 
 process.on("unhandledRejection", (err) => {
   console.log("UNHANDLED REJECTION! 💥 Shutting down...");
