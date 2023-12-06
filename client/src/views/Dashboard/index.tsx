@@ -6,6 +6,7 @@ import { IoMdChatbubbles } from "react-icons/io";
 import Avatar from "./components/Avatar";
 import useTypedSelector from "../../hooks/useTypedSelector";
 import { selectedUserId } from "../../redux/auth/authSlice";
+import { uniqBy } from "lodash";
 
 const Dashboard = () => {
   const userId = useTypedSelector(selectedUserId);
@@ -13,7 +14,9 @@ const Dashboard = () => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [onlinePeople, setOnlinePeople] = useState<any>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [messages, setMessages] = useState<any>([]);
 
+  // SETTING UP WEBSOCKET CONNECTION
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:5000");
     setWs(ws);
@@ -36,14 +39,20 @@ const Dashboard = () => {
   };
 
   const handleMessage = (e: MessageEvent) => {
+    console.log("e", e);
     // Checking Online People
     const messageData = JSON.parse(e.data);
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
     }
     // Checking New Message
-    else {
-      console.log(messageData);
+    else if ("text" in messageData) {
+      setMessages((prev: any) => [
+        ...prev,
+        {
+          ...messageData,
+        },
+      ]);
     }
   };
 
@@ -57,8 +66,16 @@ const Dashboard = () => {
         })
       );
       setNewMessage("");
+      setMessages((prev: any) => [
+        ...prev,
+        { text: newMessage, sender: userId, recipient: selectedUser },
+      ]);
     }
   };
+
+  const messagesWithoutDuplicates = uniqBy(messages, "id");
+
+  console.log("messagesWithoutDuplicates", messagesWithoutDuplicates);
 
   return (
     <Box className="flex h-screen">
@@ -92,6 +109,18 @@ const Dashboard = () => {
           {!selectedUser && (
             <Box className="flex items-center justify-center h-full text-gray-400">
               &larr; Select a person from the list
+            </Box>
+          )}
+
+          {!!selectedUser && (
+            <Box>
+              {messagesWithoutDuplicates.map((message: any, index: any) => (
+                <Box key={index}>
+                  {message.sender === selectedUser ? "ME" : ""}
+
+                  {message.text}
+                </Box>
+              ))}
             </Box>
           )}
         </Box>

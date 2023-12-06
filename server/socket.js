@@ -3,6 +3,7 @@ const { parse } = require("cookie");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 const AppError = require("./utils/appError");
+const Message = require("./models/messageModel");
 
 function setupWebSocketServer(server) {
   const wss = new ws.Server({ server });
@@ -26,16 +27,25 @@ function setupWebSocketServer(server) {
     connection.username = username;
 
     // 3) Message Received
-    connection.on("message", (message) => {
+    connection.on("message", async (message) => {
       const messageData = JSON.parse(message.toString());
       const { recipient, text } = messageData;
       if (recipient && text) {
+        // Save the message in the database
+        const messageDoc = await Message.create({
+          sender: userId,
+          recipient,
+          text,
+        });
         [...wss.clients]
           .filter((c) => c.userId === recipient)
           .forEach((c) => {
             c.send(
               JSON.stringify({
                 text,
+                sender: userId,
+                recipient,
+                id: messageDoc._id,
               })
             );
           });
