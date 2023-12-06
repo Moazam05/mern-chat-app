@@ -2,11 +2,17 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
 import { LuSendHorizonal } from "react-icons/lu";
+import { IoMdChatbubbles } from "react-icons/io";
+import Avatar from "./components/Avatar";
+import useTypedSelector from "../../hooks/useTypedSelector";
+import { selectedUserId } from "../../redux/auth/authSlice";
 
 const Dashboard = () => {
+  const userId = useTypedSelector(selectedUserId);
   const [message, setMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:5000");
@@ -39,22 +45,38 @@ const Dashboard = () => {
   return (
     <Box className="flex h-screen">
       <Box className="bg-white w-1/3">
-        <Box className="text-blue-700 font-bold">Mern Chat</Box>
-        {onlineUsers.map((user: any) => (
-          // <Box className="flex justify-between items-center p-2 border-b-2">
-          //   <Box className="flex gap-2">
-          //     <Box className="bg-blue-500 w-10 h-10 rounded-full"></Box>
-          //     <Box className="flex flex-col">
-          //       <Box className="text-lg">{user.username}</Box>
-          //       <Box className="text-sm text-gray-500">{user.userId}</Box>
-          //     </Box>
-          //   </Box>
-          // </Box>
-          <Box></Box>
-        ))}
+        <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
+          <IoMdChatbubbles /> Mern Chat
+        </Box>
+        {onlineUsers
+          .filter((c: any) => c.userId !== userId)
+          .map((user: any, index) => (
+            <Box
+              className={
+                "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
+                (selectedUser === user.userId ? "bg-blue-50" : "")
+              }
+              onClick={() => setSelectedUser(user.userId)}
+              key={index}
+            >
+              {selectedUser === user.userId && (
+                <Box className="w-1 bg-blue-500 h-12 round-r-md"></Box>
+              )}
+              <Box className="py-2 pl-4 flex gap-2 items-center">
+                <Avatar user={user} />
+                {user?.username}
+              </Box>
+            </Box>
+          ))}
       </Box>
       <Box className="flex flex-col bg-blue-50 w-2/3 p-2">
-        <Box className="flex-grow">Messages with selected person</Box>
+        <Box className="flex-grow">
+          {!selectedUser && (
+            <Box className="flex items-center justify-center h-full text-gray-400">
+              &larr; Select a person from the list
+            </Box>
+          )}
+        </Box>
         <Box className="flex gap-2 mx-2">
           <PrimaryInput
             value={message}

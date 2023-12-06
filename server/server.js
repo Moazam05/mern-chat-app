@@ -53,6 +53,8 @@ function broadcastOnlineUsers() {
 }
 
 wss.on("connection", (connection, req) => {
+  let userId; // Declare userId outside of the if block
+
   // Parse the 'user' cookie from the request headers
   const cookies = parse(req.headers.cookie || "");
   const userCookie = cookies["user"];
@@ -76,6 +78,7 @@ wss.on("connection", (connection, req) => {
     const disconnectedUserIndex = userConnections.findIndex(
       (user) => user.userId === userId
     );
+
     if (disconnectedUserIndex !== -1) {
       userConnections.splice(disconnectedUserIndex, 1);
 
