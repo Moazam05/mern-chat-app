@@ -33,7 +33,7 @@ function setupWebSocketServer(server) {
       if (recipient && text) {
         // Save the message in the database
         const messageDoc = await Message.create({
-          sender: userId,
+          sender: connection.userId,
           recipient,
           text,
         });
@@ -43,7 +43,7 @@ function setupWebSocketServer(server) {
             c.send(
               JSON.stringify({
                 text,
-                sender: userId,
+                sender: connection.userId,
                 recipient,
                 id: messageDoc._id,
               })

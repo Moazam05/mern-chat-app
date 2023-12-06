@@ -1,20 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Box } from "@mui/material";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
 import { LuSendHorizonal } from "react-icons/lu";
 import { IoMdChatbubbles } from "react-icons/io";
 import Avatar from "./components/Avatar";
 import useTypedSelector from "../../hooks/useTypedSelector";
-import { selectedUserId } from "../../redux/auth/authSlice";
+import { selectedUserId, selectedUserName } from "../../redux/auth/authSlice";
 import { uniqBy } from "lodash";
 
 const Dashboard = () => {
   const userId = useTypedSelector(selectedUserId);
+  const userName = useTypedSelector(selectedUserName);
   const [newMessage, setNewMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [onlinePeople, setOnlinePeople] = useState<any>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [messages, setMessages] = useState<any>([]);
+  const messageBoxRef = useRef<any>(null);
 
   // SETTING UP WEBSOCKET CONNECTION
   useEffect(() => {
@@ -68,20 +70,29 @@ const Dashboard = () => {
       setNewMessage("");
       setMessages((prev: any) => [
         ...prev,
-        { text: newMessage, sender: userId, recipient: selectedUser },
+        {
+          text: newMessage,
+          sender: userId,
+          recipient: selectedUser,
+          id: Date.now(),
+        },
       ]);
     }
   };
-
   const messagesWithoutDuplicates = uniqBy(messages, "id");
 
-  console.log("messagesWithoutDuplicates", messagesWithoutDuplicates);
+  useEffect(() => {
+    // Scroll to the bottom when messages are updated
+    if (messageBoxRef.current) {
+      messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+    }
+  }, [messagesWithoutDuplicates]);
 
   return (
     <Box className="flex h-screen">
       <Box className="bg-white w-1/3">
         <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
-          <IoMdChatbubbles /> Mern Chat
+          <IoMdChatbubbles /> Mern Chat {userName}
         </Box>
         {onlinePeople
           .filter((c: any) => c.userId !== userId)
@@ -113,14 +124,30 @@ const Dashboard = () => {
           )}
 
           {!!selectedUser && (
-            <Box>
-              {messagesWithoutDuplicates.map((message: any, index: any) => (
-                <Box key={index}>
-                  {message.sender === selectedUser ? "ME" : ""}
-
-                  {message.text}
-                </Box>
-              ))}
+            <Box className="relative h-full">
+              <Box
+                ref={messageBoxRef}
+                className="overflow-y-scroll absolute top-0 bottom-2 right-0 left-0"
+              >
+                {messagesWithoutDuplicates.map((message: any) => (
+                  <Box
+                    className={
+                      message.sender === userId ? "text-right" : "text-left"
+                    }
+                  >
+                    <Box
+                      key={message.id}
+                      className={`text-left inline-block p-2 my-2 mr-2 rounded-md text-sm max-w-xs ${
+                        message.sender === userId
+                          ? "bg-blue-500 text-white"
+                          : "bg-white text-black"
+                      }`}
+                    >
+                      {message.text}
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
             </Box>
           )}
         </Box>
