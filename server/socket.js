@@ -26,6 +26,8 @@ function setupWebSocketServer(server) {
     connection.userId = userId;
     connection.username = username;
 
+    // console.log("connected:" + connection.username);
+
     // 3) Message Received
     connection.on("message", async (message) => {
       const messageData = JSON.parse(message.toString());

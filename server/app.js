@@ -8,6 +8,7 @@ require("dotenv").config();
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const userRouter = require("./routes/userRoutes");
+const messageRouter = require("./routes/messageRoutes");
 
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 
 // ROUTES
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/messages", messageRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
