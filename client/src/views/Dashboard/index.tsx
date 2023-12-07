@@ -1,34 +1,46 @@
+// React Imports
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+// MUI Imports
 import { Box } from "@mui/material";
-import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
+// React Icons
 import { LuSendHorizonal } from "react-icons/lu";
 import { IoMdChatbubbles } from "react-icons/io";
-import Avatar from "./components/Avatar";
-import useTypedSelector from "../../hooks/useTypedSelector";
-import { selectedUserId, selectedUserName } from "../../redux/auth/authSlice";
-import { uniqBy } from "lodash";
-import { useGetMessagesQuery } from "../../redux/api/messageApiSlice";
-import { useGetUserQuery } from "../../redux/api/userApiSlice";
-import OverlayLoader from "../../components/Spinner/OverlayLoader";
-import { Cookies } from "react-cookie";
-import { SubHeading } from "../../components/Heading";
 import { CgProfile } from "react-icons/cg";
-import { formatDateTime } from "../../utils";
 import { BiLogOutCircle } from "react-icons/bi";
+// Hooks
+import useTypedSelector from "../../hooks/useTypedSelector";
+// Redux
+import { selectedUserId, selectedUserName } from "../../redux/auth/authSlice";
+import { useGetUserQuery } from "../../redux/api/userApiSlice";
+import { useGetMessagesQuery } from "../../redux/api/messageApiSlice";
+// Lodash
+import { uniqBy } from "lodash";
+// React Cookies
+import { Cookies } from "react-cookie";
+// Utils
+import { formatDateTime } from "../../utils";
+// Custom Imports
+import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
+import Avatar from "./components/Avatar";
+import OverlayLoader from "../../components/Spinner/OverlayLoader";
+import { SubHeading } from "../../components/Heading";
 
 const Dashboard = () => {
   const cookies = new Cookies();
   const navigate = useNavigate();
+  const messageBoxRef = useRef<any>(null);
+
   const userId = useTypedSelector(selectedUserId);
   const userName = useTypedSelector(selectedUserName);
+
+  // States
   const [newMessage, setNewMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [onlinePeople, setOnlinePeople] = useState<any>([]);
   const [offlinePeople, setOfflinePeople] = useState<any>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [messages, setMessages] = useState<any>([]);
-  const messageBoxRef = useRef<any>(null);
 
   // SETTING UP WEBSOCKET CONNECTION
   useEffect(() => {

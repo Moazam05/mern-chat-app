@@ -1,3 +1,4 @@
+// MUI Imports
 import { Box } from "@mui/material";
 
 const Avatar = (props: any) => {

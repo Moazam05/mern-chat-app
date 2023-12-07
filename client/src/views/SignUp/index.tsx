@@ -15,9 +15,9 @@ import { Box, Button } from "@mui/material";
 import { Heading, SubHeading } from "../../components/Heading";
 import ToastAlert from "../../components/ToastAlert/ToastAlert";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
+import DotLoader from "../../components/Spinner/dotLoader";
 // Redux API
 import { useSignupMutation } from "../../redux/api/authApiSlice";
-import DotLoader from "../../components/Spinner/dotLoader";
 
 interface ISSignupForm {
   userName: string;

@@ -18,14 +18,18 @@ import { Heading, SubHeading } from "../../components/Heading";
 import DotLoader from "../../components/Spinner/dotLoader";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
 import ToastAlert from "../../components/ToastAlert/ToastAlert";
+// Yup Imports
 import * as Yup from "yup";
+// React Cookie
 import { Cookies } from "react-cookie";
 
+// Yup Validation Schema
 const loginSchema = Yup.object().shape({
   userName: Yup.string().required("User Name is required").nullable(),
   password: Yup.string().required("Password is required").nullable(),
 });
 
+// Interface for Login Form
 interface ISLoginForm {
   userName: string;
   password: string;
@@ -43,7 +47,6 @@ const Login = () => {
     userName: "",
     password: "",
   });
-
   const [toast, setToast] = useState({
     message: "",
     appearence: false,
