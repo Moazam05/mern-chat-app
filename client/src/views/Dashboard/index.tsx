@@ -14,6 +14,7 @@ import OverlayLoader from "../../components/Spinner/OverlayLoader";
 import { Cookies } from "react-cookie";
 import { SubHeading } from "../../components/Heading";
 import { CgProfile } from "react-icons/cg";
+import { formatDateTime } from "../../utils";
 
 const Dashboard = () => {
   const cookies = new Cookies();
@@ -107,6 +108,7 @@ const Dashboard = () => {
           sender: userId,
           recipient: selectedUser,
           _id: Date.now(),
+          createdAt: new Date().toISOString(),
         },
       ]);
     }
@@ -118,7 +120,7 @@ const Dashboard = () => {
     if (messageBoxRef.current) {
       messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
     }
-  }, [newMessage]);
+  }, [messages]);
 
   // GETTING ALL USERS API QUERY
   const { data: allUsers, isLoading } = useGetUserQuery({
@@ -225,24 +227,42 @@ const Dashboard = () => {
                 ref={messageBoxRef}
                 className="overflow-y-scroll absolute top-0 bottom-2 right-0 left-0"
               >
-                {messagesWithoutDuplicates.map((message: any) => (
-                  <Box
-                    key={message._id}
-                    className={
-                      message.sender === userId ? "text-right" : "text-left"
-                    }
-                  >
-                    <Box
-                      className={`text-left inline-block p-2 my-2 mr-2 rounded-md text-sm max-w-xs ${
-                        message.sender === userId
-                          ? "bg-blue-500 text-white"
-                          : "bg-white text-black"
-                      }`}
-                    >
-                      {message.text}
-                    </Box>
-                  </Box>
-                ))}
+                {messagesWithoutDuplicates.map(
+                  (message: any, index: number) => {
+                    const currentMessageDate = new Date(message.createdAt);
+                    const previousMessage: any =
+                      messagesWithoutDuplicates[index - 1];
+
+                    const isSameMinute =
+                      index > 0 &&
+                      previousMessage &&
+                      new Date(previousMessage.createdAt).getMinutes() ===
+                        currentMessageDate.getMinutes();
+                    return (
+                      <Box
+                        key={message._id}
+                        className={
+                          message.sender === userId ? "text-right" : "text-left"
+                        }
+                      >
+                        {!isSameMinute && (
+                          <Box className="flex items-center justify-center text-sm text-gray-500">
+                            {formatDateTime(message.createdAt)}
+                          </Box>
+                        )}
+                        <Box
+                          className={`text-left inline-block p-2 my-2 mr-2 rounded-md text-sm max-w-xs ${
+                            message.sender === userId
+                              ? "bg-blue-500 text-white"
+                              : "bg-white text-black"
+                          }`}
+                        >
+                          {message.text}
+                        </Box>
+                      </Box>
+                    );
+                  }
+                )}
               </Box>
             </Box>
           )}
