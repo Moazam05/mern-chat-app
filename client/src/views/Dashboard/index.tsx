@@ -115,7 +115,9 @@ const Dashboard = () => {
   }, [messagesWithoutDuplicates]);
 
   // GETTING ALL USERS API QUERY
-  const { data: allUsers, isLoading } = useGetUserQuery({});
+  const { data: allUsers, isLoading } = useGetUserQuery({
+    refetchOnMountOrArgChange: true,
+  });
 
   useEffect(() => {
     if (allUsers) {
@@ -123,7 +125,6 @@ const Dashboard = () => {
       const excludeMe = allUsers?.data?.filter(
         (user: any) => user.userId !== userId
       );
-
       // Filter users who are offline
       const offlineUsers = excludeMe?.filter(
         (user: any) =>
@@ -134,9 +135,8 @@ const Dashboard = () => {
 
       setOfflinePeople(offlineUsers);
     }
-  }, []);
-
-  // console.log("offlinePeople", offlinePeople);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allUsers, onlinePeople]);
 
   return (
     <Box className="flex h-screen">
