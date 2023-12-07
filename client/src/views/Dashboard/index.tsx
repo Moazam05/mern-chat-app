@@ -8,6 +8,8 @@ import useTypedSelector from "../../hooks/useTypedSelector";
 import { selectedUserId, selectedUserName } from "../../redux/auth/authSlice";
 import { uniqBy } from "lodash";
 import { useGetMessagesQuery } from "../../redux/api/messageApiSlice";
+import { useGetUserQuery } from "../../redux/api/userApiSlice";
+import OverlayLoader from "../../components/Spinner/OverlayLoader";
 
 const Dashboard = () => {
   const userId = useTypedSelector(selectedUserId);
@@ -15,6 +17,7 @@ const Dashboard = () => {
   const [newMessage, setNewMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [onlinePeople, setOnlinePeople] = useState<any>([]);
+  const [offlinePeople, setOfflinePeople] = useState<any>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [messages, setMessages] = useState<any>([]);
   const messageBoxRef = useRef<any>(null);
@@ -111,12 +114,38 @@ const Dashboard = () => {
     }
   }, [messagesWithoutDuplicates]);
 
+  // GETTING ALL USERS API QUERY
+  const { data: allUsers, isLoading } = useGetUserQuery({});
+
+  useEffect(() => {
+    if (allUsers) {
+      // Exclude the current user and logged-in user
+      const excludeMe = allUsers?.data?.filter(
+        (user: any) => user.userId !== userId
+      );
+
+      // Filter users who are offline
+      const offlineUsers = excludeMe?.filter(
+        (user: any) =>
+          !onlinePeople?.some(
+            (onlineUser: any) => onlineUser.userId === user.userId
+          )
+      );
+
+      setOfflinePeople(offlineUsers);
+    }
+  }, []);
+
+  // console.log("offlinePeople", offlinePeople);
+
   return (
     <Box className="flex h-screen">
+      {isLoading && <OverlayLoader />}
       <Box className="bg-white w-1/3">
         <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
           <IoMdChatbubbles /> Mern Chat {userName}
         </Box>
+        {/* Online People */}
         {onlinePeople
           .filter((c: any) => c.userId !== userId)
           .map((user: any, index: any) => (
@@ -132,11 +161,30 @@ const Dashboard = () => {
                 <Box className="w-1 bg-blue-500 h-12 round-r-md"></Box>
               )}
               <Box className="py-2 pl-4 flex gap-2 items-center">
-                <Avatar user={user} />
+                <Avatar online={true} user={user} />
                 {user?.username}
               </Box>
             </Box>
           ))}
+        {/* Offline People */}
+        {offlinePeople.map((user: any, index: any) => (
+          <Box
+            className={
+              "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
+              (selectedUser === user.userId ? "bg-blue-50" : "")
+            }
+            onClick={() => setSelectedUser(user.userId)}
+            key={index}
+          >
+            {selectedUser === user.userId && (
+              <Box className="w-1 bg-blue-500 h-12 round-r-md"></Box>
+            )}
+            <Box className="py-2 pl-4 flex gap-2 items-center">
+              <Avatar online={false} user={user} />
+              {user?.username}
+            </Box>
+          </Box>
+        ))}
       </Box>
       <Box className="flex flex-col bg-blue-50 w-2/3 p-2">
         <Box className="flex-grow">
@@ -154,12 +202,12 @@ const Dashboard = () => {
               >
                 {messagesWithoutDuplicates.map((message: any) => (
                   <Box
+                    key={message._id}
                     className={
                       message.sender === userId ? "text-right" : "text-left"
                     }
                   >
                     <Box
-                      key={message.id}
                       className={`text-left inline-block p-2 my-2 mr-2 rounded-md text-sm max-w-xs ${
                         message.sender === userId
                           ? "bg-blue-500 text-white"

@@ -25,6 +25,12 @@ const Avatar = (props: any) => {
         <Box className="text-center w-full opacity-70">
           {props?.user?.username[0]}
         </Box>
+        {props.online && (
+          <Box className="absolute w-3 h-3 bottom-0 right-0 bg-green-400 rounded-full border border-white"></Box>
+        )}
+        {!props.online && (
+          <Box className="absolute w-3 h-3 bottom-0 right-0 bg-gray-400 rounded-full border border-white"></Box>
+        )}
       </Box>
     </>
   );
