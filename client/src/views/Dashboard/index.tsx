@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import PrimaryInput from "../../components/PrimaryInput/PrimaryInput";
 import { LuSendHorizonal } from "react-icons/lu";
@@ -10,8 +11,13 @@ import { uniqBy } from "lodash";
 import { useGetMessagesQuery } from "../../redux/api/messageApiSlice";
 import { useGetUserQuery } from "../../redux/api/userApiSlice";
 import OverlayLoader from "../../components/Spinner/OverlayLoader";
+import { Cookies } from "react-cookie";
+import { SubHeading } from "../../components/Heading";
+import { CgProfile } from "react-icons/cg";
 
 const Dashboard = () => {
+  const cookies = new Cookies();
+  const navigate = useNavigate();
   const userId = useTypedSelector(selectedUserId);
   const userName = useTypedSelector(selectedUserName);
   const [newMessage, setNewMessage] = useState("");
@@ -112,7 +118,7 @@ const Dashboard = () => {
     if (messageBoxRef.current) {
       messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
     }
-  }, [messagesWithoutDuplicates]);
+  }, [newMessage]);
 
   // GETTING ALL USERS API QUERY
   const { data: allUsers, isLoading } = useGetUserQuery({
@@ -141,14 +147,34 @@ const Dashboard = () => {
   return (
     <Box className="flex h-screen">
       {isLoading && <OverlayLoader />}
-      <Box className="bg-white w-1/3">
-        <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
-          <IoMdChatbubbles /> Mern Chat {userName}
-        </Box>
-        {/* Online People */}
-        {onlinePeople
-          .filter((c: any) => c.userId !== userId)
-          .map((user: any, index: any) => (
+      <Box className="bg-white w-1/3 flex flex-col">
+        <Box className="flex-grow">
+          <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
+            <IoMdChatbubbles /> Mern Chat
+          </Box>
+          {/* Online People */}
+          {onlinePeople
+            .filter((c: any) => c.userId !== userId)
+            .map((user: any, index: any) => (
+              <Box
+                className={
+                  "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
+                  (selectedUser === user.userId ? "bg-blue-50" : "")
+                }
+                onClick={() => setSelectedUser(user.userId)}
+                key={index}
+              >
+                {selectedUser === user.userId && (
+                  <Box className="w-1 bg-blue-500 h-12 round-r-md"></Box>
+                )}
+                <Box className="py-2 pl-4 flex gap-2 items-center">
+                  <Avatar online={true} user={user} />
+                  {user?.username}
+                </Box>
+              </Box>
+            ))}
+          {/* Offline People */}
+          {offlinePeople.map((user: any, index: any) => (
             <Box
               className={
                 "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
@@ -161,30 +187,29 @@ const Dashboard = () => {
                 <Box className="w-1 bg-blue-500 h-12 round-r-md"></Box>
               )}
               <Box className="py-2 pl-4 flex gap-2 items-center">
-                <Avatar online={true} user={user} />
+                <Avatar online={false} user={user} />
                 {user?.username}
               </Box>
             </Box>
           ))}
-        {/* Offline People */}
-        {offlinePeople.map((user: any, index: any) => (
-          <Box
-            className={
-              "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
-              (selectedUser === user.userId ? "bg-blue-50" : "")
-            }
-            onClick={() => setSelectedUser(user.userId)}
-            key={index}
-          >
-            {selectedUser === user.userId && (
-              <Box className="w-1 bg-blue-500 h-12 round-r-md"></Box>
-            )}
-            <Box className="py-2 pl-4 flex gap-2 items-center">
-              <Avatar online={false} user={user} />
-              {user?.username}
-            </Box>
+        </Box>
+        <Box className="p-2 text-center">
+          <Box className="flex items-center justify-center gap-2">
+            <SubHeading sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <CgProfile /> {userName}
+            </SubHeading>
+            <button
+              className="text-sm text-gray-600 bg-blue-100 py-1 px-2 border rounded-sm"
+              onClick={() => {
+                localStorage.removeItem("user");
+                cookies.remove("user");
+                navigate("/login");
+              }}
+            >
+              Logout
+            </button>
           </Box>
-        ))}
+        </Box>
       </Box>
       <Box className="flex flex-col bg-blue-50 w-2/3 p-2">
         <Box className="flex-grow">
