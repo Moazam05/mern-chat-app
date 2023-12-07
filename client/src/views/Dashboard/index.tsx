@@ -7,6 +7,7 @@ import Avatar from "./components/Avatar";
 import useTypedSelector from "../../hooks/useTypedSelector";
 import { selectedUserId, selectedUserName } from "../../redux/auth/authSlice";
 import { uniqBy } from "lodash";
+import { useGetMessagesQuery } from "../../redux/api/messageApiSlice";
 
 const Dashboard = () => {
   const userId = useTypedSelector(selectedUserId);
@@ -20,11 +21,22 @@ const Dashboard = () => {
 
   // SETTING UP WEBSOCKET CONNECTION
   useEffect(() => {
+    connectToWebsocket();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const connectToWebsocket = () => {
     const ws = new WebSocket("ws://localhost:5000");
     setWs(ws);
 
     ws.addEventListener("message", handleMessage);
-  }, []);
+    ws.addEventListener("close", () =>
+      setTimeout(() => {
+        console.log("Disconnected, Trying to reconnect...");
+        connectToWebsocket();
+      }, 1000)
+    );
+  };
 
   const showOnlinePeople = (peopleArray: any) => {
     const people: any = {};
@@ -41,7 +53,7 @@ const Dashboard = () => {
   };
 
   const handleMessage = (e: MessageEvent) => {
-    console.log("e", e);
+    // console.log("e", e);
     // Checking Online People
     const messageData = JSON.parse(e.data);
     if ("online" in messageData) {
@@ -57,6 +69,17 @@ const Dashboard = () => {
       ]);
     }
   };
+
+  // GETTING MESSAGES API QUERY
+  const { data } = useGetMessagesQuery(selectedUser || "", {
+    refetchOnMountOrArgChange: true,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setMessages(data?.messages);
+    }
+  }, [data]);
 
   const sendMessage = (e: any) => {
     e.preventDefault();
@@ -74,15 +97,15 @@ const Dashboard = () => {
           text: newMessage,
           sender: userId,
           recipient: selectedUser,
-          id: Date.now(),
+          _id: Date.now(),
         },
       ]);
     }
   };
-  const messagesWithoutDuplicates = uniqBy(messages, "id");
+  const messagesWithoutDuplicates = uniqBy(messages, "_id");
 
+  // Scroll to the bottom when messages are updated
   useEffect(() => {
-    // Scroll to the bottom when messages are updated
     if (messageBoxRef.current) {
       messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
     }

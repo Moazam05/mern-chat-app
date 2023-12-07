@@ -10,7 +10,7 @@ exports.getMessages = catchAsync(async (req, res, next) => {
       { sender: currentUserId, recipient: userId },
       { sender: userId, recipient: currentUserId },
     ],
-  }).sort({ createdAt: -1 });
+  }).sort({ createdAt: 1 });
 
   res.status(200).json({
     status: "success",
