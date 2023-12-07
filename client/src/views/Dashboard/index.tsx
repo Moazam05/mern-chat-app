@@ -15,6 +15,7 @@ import { Cookies } from "react-cookie";
 import { SubHeading } from "../../components/Heading";
 import { CgProfile } from "react-icons/cg";
 import { formatDateTime } from "../../utils";
+import { BiLogOutCircle } from "react-icons/bi";
 
 const Dashboard = () => {
   const cookies = new Cookies();
@@ -151,8 +152,17 @@ const Dashboard = () => {
       {isLoading && <OverlayLoader />}
       <Box className="bg-white w-1/3 flex flex-col">
         <Box className="flex-grow">
-          <Box className="text-blue-600 font-bold flex items-center p-4 gap-2 text-2xl">
-            <IoMdChatbubbles /> Mern Chat
+          <Box className="flex items-center justify-between">
+            <Box className="text-blue-500 font-bold flex items-center p-4 gap-2 text-2xl">
+              <IoMdChatbubbles /> Chat HuB
+            </Box>
+            <Box className="pr-4">
+              <SubHeading
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <CgProfile /> {userName}
+              </SubHeading>
+            </Box>
           </Box>
           {/* Online People */}
           {onlinePeople
@@ -196,24 +206,22 @@ const Dashboard = () => {
           ))}
         </Box>
         <Box className="p-2 text-center">
-          <Box className="flex items-center justify-center gap-2">
-            <SubHeading sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <CgProfile /> {userName}
-            </SubHeading>
+          <Box className="flex items-center pb-2 gap-2">
             <button
-              className="text-sm text-gray-600 bg-blue-100 py-1 px-2 border rounded-sm"
+              className="text-sm text-gray-600 bg-blue-100 py-1 px-2 border rounded-sm flex items-center gap-2"
               onClick={() => {
                 localStorage.removeItem("user");
                 cookies.remove("user");
                 navigate("/login");
               }}
             >
+              <BiLogOutCircle />
               Logout
             </button>
           </Box>
         </Box>
       </Box>
-      <Box className="flex flex-col bg-blue-50 w-2/3 p-2">
+      <Box className="flex flex-col bg-blue-50 w-2/3 p-2 pt-4">
         <Box className="flex-grow">
           {!selectedUser && (
             <Box className="flex items-center justify-center h-full text-gray-400">
@@ -268,7 +276,7 @@ const Dashboard = () => {
           )}
         </Box>
         {!!selectedUser && (
-          <form className="flex gap-2 mx-2" onSubmit={sendMessage}>
+          <form className="flex gap-2 mr-6" onSubmit={sendMessage}>
             <PrimaryInput
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
